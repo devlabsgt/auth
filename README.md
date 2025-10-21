@@ -1,6 +1,4 @@
-
-
-## 🛠️ GUÍA COMPLETA: Primeros pasos Proyecto `auth` (PNPM)
+# 🛠️ GUÍA COMPLETA: Primeros pasos Proyecto `auth` (PNPM)
 
 Este tutorial asume que tienes instaladas las siguientes herramientas en tu PC:
 
@@ -22,7 +20,7 @@ Este tutorial asume que tienes instaladas las siguientes herramientas en tu PC:
 3.  **DESACTIVAR** (OFF) la opción: $$\text{Confirm email}$$
 4.  Haga clic en **"Save changes"**.
 
-#### 3\. Configuración de Storage (Avatares)
+#### 3\. Configuración de Storage (Avatars)
 
 1.  Navegue a **Storage** y haga clic en **"New bucket"**.
 
@@ -31,18 +29,33 @@ Este tutorial asume que tienes instaladas las siguientes herramientas en tu PC:
       * **Restricciones:** Active **"Restrict file size"** (0.5 MB) y **"Restrict MIME types"** (`image/jpeg, image/png, image/webp`).
       * Haga clic en **"Create"**.
 
-2.  Navegue a **SQL Editor** y ejecute este código (Políticas RLS):
+2.  Navegue a **SQL Editor** y ejecute este código completo para las Políticas RLS de Storage:
 
     ```sql
+    -- Permite subir archivos a usuarios autenticados
     create policy "Allow authenticated users to insert"
     on storage.objects for insert
     to authenticated
     with check (bucket_id = 'avatars'::text);
 
+    -- Permite la visualización pública del avatar
     create policy "Allow public access"
     on storage.objects for select
     to public
     using (bucket_id = 'avatars'::text);
+
+    -- Permite actualizar el propio avatar
+    create policy "Allow authenticated users to update own avatar"
+    on storage.objects for update
+    to authenticated
+    using ( auth.uid() = owner )
+    with check ( bucket_id = 'avatars'::text );
+
+    -- Permite eliminar el propio avatar
+    create policy "Allow authenticated users to delete own avatar"
+    on storage.objects for delete
+    to authenticated
+    using ( auth.uid() = owner AND bucket_id = 'avatars'::text );
     ```
 
 -----
@@ -54,7 +67,7 @@ Este tutorial asume que tienes instaladas las siguientes herramientas en tu PC:
 1.  Abre tu terminal y clona el repositorio:
 
     ```bash
-    git clone https://github.com/devlabsgt/auth.git
+    git clone [https://github.com/devlabsgt/auth.git](https://github.com/devlabsgt/auth.git)
 
     # Navega a la carpeta del proyecto
     cd auth
